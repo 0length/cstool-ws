@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Connection Test Tool</title>
+    <meta charset="utf-8" />
+    <style>
+        @import url(https://fonts.googleapis.com/css?family=Lato:300,400,700,900);
+
+        body {
+            font-family: "Lato";
+            font-weight: 300;
+            color: #456;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px solid #456;
+            margin: 30px 0px;
+            width: 215px;
+            opacity: 0.5;
+        }
+
+        input,
+        button {
+            font-family: "Lato";
+            font-weight: 700;
+            font-size: 14px;
+            color: #555;
+            border-radius: 2px;
+            background: white;
+            border: 2px solid #ddd;
+            padding: 5px;
+            margin-top: 10px;
+        }
+
+        input {
+            width: 200px;
+        }
+
+        strong,
+        button {
+            font-family: "Lato";
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        button {
+            margin-right: 10px;
+            width: 100px;
+        }
+
+        #cs_subject-status {
+            clear: both;
+            color: #800000;
+        }
+
+        #cs_subject-jsonprettyprint {
+            background-color: #f5f5f5;
+            border-color: #ccc;
+            border-style: solid;
+            border-width: 1px;
+            box-sizing: border-box;
+            color: gray;
+            /*height: 300px;*/
+            margin: 1px 0;
+            overflow: auto;
+            padding: 9px;
+        }
+
+        #cs_subject-jsonprettyprint .k {
+            font-weight: bold;
+            color: black;
+        }
+
+        #cs_subject-jsonprettyprint .null {
+            color: red;
+        }
+
+        #cs_subject-jsonprettyprint .boolean {
+            color: blue;
+        }
+
+        #cs_subject-jsonprettyprint .number {
+            color: blue;
+        }
+
+        #cs_subject-jsonprettyprint .string {
+            color: green;
+            white-space: pre-wrap;
+        }
+
+        #cs_subject-jsonprettyprint .string a {
+            color: inherit;
+        }
+
+        #cs_subject-jsonprettyprint .string a:hover {
+            text-decoration: underline;
+        }
+
+        #cs_subject-jsonprettyprint .collapser {
+            cursor: pointer;
+            left: -1em;
+            position: absolute;
+            top: -0.2em;
+            transform: rotate(90deg);
+            transition: transform 0.2s ease 0s;
+        }
+
+        #cs_subject-jsonprettyprint .collapser::before {
+            -moz-user-select: none;
+            content: "▸";
+        }
+
+        #cs_subject-jsonprettyprint .collapsible.collapsed {
+            display: inline-block;
+            height: 1.2em;
+            margin: 0;
+            overflow: hidden;
+            vertical-align: top;
+            width: 1.4em;
+        }
+
+        #cs_subject-jsonprettyprint .collapsible.collapsed::before {
+            content: "…";
+            margin-left: 0.2em;
+        }
+
+        #cs_subject-jsonprettyprint .collapser.collapsed {
+            transform: rotate(0deg);
+        }
+
+        #cs_subject-jsonprettyprint .q {
+            color: transparent;
+            display: inline-block;
+            width: 0;
+        }
+
+        #cs_subject-jsonprettyprint .quoted .q {
+            color: inherit;
+            display: inline;
+            font-weight: normal;
+            width: auto;
+        }
+
+        #cs_subject-jsonprettyprint li {
+            position: relative;
+        }
+
+        #cs_subject-jsonprettyprint #error {
+            background-color: #efefef;
+            border-bottom: 1px solid #d4d1d1;
+            margin-bottom: 1.5em;
+            padding: 1em 0.5em;
+        }
+
+        #cs_subject-jsonprettyprint .errormessage {
+            color: #a70505;
+            font-family: monospace;
+            margin-top: 0.5em;
+        }
+
+        #cs_subject-jsonprettyprint .errorcolumn {
+            background-color: #a70505;
+            color: white;
+        }
+
+        #cs_subject-jsonprettyprint .errorline {
+            background-color: #ffe2e2;
+        }
+
+        #cs_subject-jsonprettyprint #json {
+            font-family: monospace;
+            font-size: 1.1em;
+            margin: 0.5em;
+            white-space: pre-wrap;
+        }
+
+        #cs_subject-jsonprettyprint ul {
+            list-style: outside none none;
+            margin: 0 0 0 2em;
+            padding: 0;
+        }
+
+        #cs_subject-jsonprettyprint h1 {
+            font-size: 1.2em;
+        }
+
+        #cs_subject-jsonprettyprint .callback+#json {
+            padding-left: 1em;
+        }
+
+        #cs_subject-jsonprettyprint .callback {
+            color: #a52a2a;
+            font-family: monospace;
+        }
+    </style>
+    <script>
+        $ = (query) => document.querySelector(query);
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/6.6.7/rxjs.umd.min.js"
+        integrity="sha512-0/2ebe9lI6BcinFBXFjbBkquDfccT2wP+E48pecciFuGMXPRNdInXZawHiM2NUUVJ4/aKAzyebbvh+CkvRhwTA=="
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <h1>Server Url</h1>
+    <input id='public_url' placeholder='Public Server URL' value="http://localhost:4000" />
+    <input id='private_url' placeholder='Private Server URL' value="http://localhost:4001" />
+    <input id='debug_url' placeholder='Debug Server URL' value="http://localhost:4002" />
+
+    <input id='public_key' placeholder='Public Server KEY' value="" />
+    <input id='private_key' placeholder='Private Server KEY' value="" />
+    <input id='debug_key' placeholder='Debug Server KEY' value="App debug:all:debugkey" />
+    <!-- <div id="audit">
+        <h1>Audit</h1>
+        <p>Create Cs Session.</p>
+        <input id='data_session' placeholder='Data CS' />
+        <button onClick='createSession()'>Create</button>>
+        <pre>
+        </pre>
+        <script type="text/javascript">
+            const defaultData = `{
+                "id": "0",
+                "name": "Test",
+                "nickname": "test",
+                "enroll_id": "test",
+                "nip": "0",
+                "created_at": "2020-08-21T10:08:09.000000Z",
+                "updated_at": "2021-01-12T07:26:10.000000Z",
+                "division": {
+                    "id": "1",
+                    "name": "Testing",
+                    "slug": "testing"
+                }
+            `;
+
+            $("#data_session").value = defaultData;
+            function createSession() {
+                const data = $("#data_session").value;
+                fetch($("#public_url").value, {
+                    headers: {
+                        aurhorization: 'App control:all:controlkey'
+                    },
+                    body: JSON.stringify({
+                        'query': `
+                        query createSession($data: SessionDataInput){
+                            broadcast(data: $data)
+                        }
+                        `, 'variables': {
+                            "data": data
+                        }
+                    })
+                });
+            }
+        </script>
+    </div> -->
+
+    <div id="logger">
+        <h1>Logger</h1>
+        <p>Show logged message.</p>
+        <button onClick='logger()'>start</button>
+        <pre>
+        </pre>
+        <script type="text/javascript">
+            function logger() {
+                const authorization = $('#debug_key').value
+                // const url = 
+                const socket$ = rxjs.webSocket.webSocket(
+                    {
+                        url: (location.protocol === "https:"?'wss://':'ws://').concat($('#debug_url')
+                            .value
+                            .split("//")[1]),
+                        protocol: "graphql-ws",
+                    }
+                );
+                socket$.subscribe(({ payload }) => {
+                    if (payload && payload.data && payload.data['logger'] &&  !payload.data['logger'].contains("ping"))
+                        $('#logger pre').innerText = $('#logger pre')
+                            .innerText
+                            .concat('\n')
+                            .concat(payload.data['logger']);
+                });
+                socket$.next({ type: 'connection_init', payload: { authorization } });
+                socket$.next({
+                    "id": "1", "type": "start", "payload": {
+                        "variables": {}, "extensions": {}, "operationName": null, "query": `
+                    subscription {
+                        logger
+                    }
+                ` }
+                });
+            }
+        </script>
+    </div>
+
+    <div id="cs_subject">
+        <h1>CS Subject</h1>
+        <p>Show cs subscription running.</p>
+        <p id="cs_subject-status"></p>
+        <button onClick='csSubject()'>start</button>
+        <div id="cs_subject-display" hidden>
+            <p><a id="cs_subject-collapse-all" href="#cs_subject-collapse-all">Collapse all</a> - <a
+                    id="cs_subject-expand-all" href="#cs_subject-expand-all">Expand all</a></p>
+            <div id="cs_subject-jsonprettyprint"></div>
+        </div>
+        <script type="text/javascript">
+            function csSubject() {
+                const prefixId = "cs_subject-";
+                const authorization = $('#debug_key').value
+                const socket$ = rxjs.webSocket.webSocket(
+                    {
+                        url: (location.protocol === "https:"?'wss://':'ws://').concat($('#debug_url')
+                            .value
+                            .split("//")[1]),
+                        protocol: "graphql-ws",
+                    }
+                );
+
+                socket$.subscribe(({ payload }) => {
+                    if (payload && payload.data && payload.data['cs'])
+                        prettyPrintObject(prefixId, payload.data['cs']);
+                });
+                socket$.next({ type: 'connection_init', payload: { authorization } });
+                socket$.next({
+                    "id": "1", "type": "start", "payload": {
+                        "variables": {}, "extensions": {}, "operationName": null, "query": `
+                    subscription {
+                        cs
+                    }
+                ` }
+                });
+            }
+
+        </script>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script>
+        function prettyPrintObject(prefixId, obj) {
+            const prettyprint = (function () {
+                var _quote = function () {
+                    var q = document.createElement('span');
+                    q.appendChild(document.createTextNode('"'));
+                    q.className = 'q';
+                    return q;
+                };
+                var _printString = function (data, el) {
+                    var span = el.appendChild(document.createElement('span'));
+                    span.className = 'string';
+                    span.appendChild(_quote());
+                    if (data.match(/^https?:\/\//)) {
+                        var a = span.appendChild(document.createElement('a'));
+                        a.href = data;
+                        a.appendChild(document.createTextNode(data));
+                    }
+                    else {
+                        span.appendChild(document.createTextNode(data));
+                    }
+                    span.appendChild(_quote());
+                };
+                var _printNumber = function (data, el) {
+                    var span = el.appendChild(document.createElement('span'));
+                    span.className = typeof data;
+                    span.appendChild(document.createTextNode(data));
+                };
+                var _printNull = function (data, el) {
+                    var span = el.appendChild(document.createElement('span'));
+                    span.className = 'null';
+                    span.appendChild(document.createTextNode('null'));
+                };
+                var _printArray = function (data, el) {
+                    var collapser = el.appendChild(document.createElement('span'));
+                    collapser.className = 'collapser';
+                    el.appendChild(document.createTextNode('['));
+                    var ul = el.appendChild(document.createElement('ul'));
+                    ul.classList.add('array');
+                    ul.classList.add('collapsible');
+                    var li;
+                    for (var i = 0; i < data.length; i++) {
+                        if (li) {
+                            li.appendChild(document.createTextNode(','));
+                        }
+                        li = ul.appendChild(document.createElement('li'));
+                        _print(data[i], li);
+                    }
+                    el.appendChild(document.createTextNode(']'));
+                };
+                var _printObject = function (data, el) {
+                    var collapser = el.appendChild(document.createElement('span'));
+                    collapser.className = 'collapser';
+                    el.appendChild(document.createTextNode('{'));
+                    var ul = el.appendChild(document.createElement('ul'));
+                    ul.classList.add('obj');
+                    ul.classList.add('collapsible');
+                    var k, isLink, li;
+                    for (var x in data) {
+                        if (li) {
+                            li.appendChild(document.createTextNode(','));
+                        }
+                        li = ul.appendChild(document.createElement('li'));
+                        k = li.appendChild(document.createElement('span'));
+                        k.className = 'k';
+                        k.appendChild(_quote());
+                        k.appendChild(document.createTextNode(x));
+                        k.appendChild(_quote());
+                        li.appendChild(document.createTextNode(': '));
+                        _print(data[x], li);
+                    }
+                    el.appendChild(document.createTextNode('}'));
+                };
+                var _print = function (data, el) {
+                    if (typeof data === 'string') {
+                        _printString(data, el);
+                    }
+                    else if (typeof data === 'number' || typeof data === 'boolean') {
+                        _printNumber(data, el);
+                    }
+                    else if (data === null) {
+                        _printNull(data, el);
+                    }
+                    else if (Array.isArray(data)) {
+                        _printArray(data, el);
+                    }
+                    else if (typeof data === 'object') {
+                        _printObject(data, el);
+                    }
+                    else {
+                        throw { message: "Oops. Unhandled datatype." };
+                    }
+                };
+                return _print;
+            })();
+
+            const print = (prefixId, obj) => {
+                const statusMessage = document.getElementById(prefixId + 'status');
+                if (statusMessage.firstChild) {
+                    statusMessage.removeChild(statusMessage.firstChild);
+                }
+                const jsonprettyprint = document.getElementById(prefixId + 'jsonprettyprint');
+                try {
+                    while (jsonprettyprint.firstChild) {
+                        jsonprettyprint.removeChild(jsonprettyprint.firstChild);
+                    }
+                    prettyprint(obj, jsonprettyprint);
+                    document.getElementById(prefixId + 'display').removeAttribute('hidden');
+                } catch (o_O) {
+                    statusMessage.appendChild(document.createTextNode(o_O.message));
+                    document.getElementById(prefixId + 'display').setAttribute('hidden', true);
+                }
+            };
+            const jsonprettyprintEl = document.getElementById(prefixId + 'jsonprettyprint');
+            var collapseAll = function (evt) {
+                var collapse = evt.target.id === prefixId + 'collapse-all' ? true : false;
+                var els;
+                els = $('cs_subject').getElementsByClassName('collapsible');
+                for (var i = 1; i < els.length; i++) {
+                    els[i].classList.toggle('collapsed', collapse);
+                }
+                els = $('cs_subject').getElementsByClassName('collapser');
+                for (var i = 1; i < els.length; i++) {
+                    els[i].classList.toggle('collapsed', collapse);
+                }
+                evt.preventDefault();
+            };
+            document.getElementById(prefixId + 'collapse-all').addEventListener('click', collapseAll, false);
+            document.getElementById(prefixId + 'expand-all').addEventListener('click', collapseAll, false);
+            jsonprettyprintEl.addEventListener('click', function (evt) {
+                if (evt.target.classList && evt.target.classList.contains('collapser')) {
+                    var collapser = evt.target;
+                    evt.stopPropagation();
+                    collapser.classList.toggle('collapsed');
+                    var collapsible = collapser;
+                    while (collapsible && (!collapsible.classList || !collapsible.classList.contains('collapsible'))) {
+                        collapsible = collapsible.nextSibling;
+                    }
+                    collapsible.classList.toggle('collapsed');
+                }
+                else if (evt.target.tagName === 'A') {
+                    console.log('A');
+                }
+                evt.preventDefault();
+            }, false);
+            print(prefixId, obj);
+        };
+    </script>
+</body>
+
+</html>

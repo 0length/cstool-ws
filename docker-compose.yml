@@ -1,0 +1,49 @@
+version: "3"
+services:
+  ws:
+    build: 
+      context: ./
+    container_name: 'apollo'
+    entrypoint: ["sh", "-c"]
+    command: ["yarn && yarn run dev"]
+    ports:
+      - "4000:4000"
+      - "4001:4001"
+      - "4002:4002"
+      - "4003:4003"
+      - "4004:4004"
+    env_file: '.env'
+    environment:
+    - "PUBLIC_HOST=ws"
+    - "PUBLIC_PORT=4000"
+    - "PRIVATE_HOST=ws"
+    - "PRIVATE_PORT=4001"
+    - "DEBUG_HOST=ws"
+    - "DEBUG_PORT=4002"
+    - "MONITOR_HOST=ws"
+    - "MONITOR_PORT=4003"
+    - "DOCS_HOST=ws"
+    - "DOCS_PORT=4004"
+    - "REDIS_PORT=6379"
+    - "REDIS_HOST=redis"
+    - "REDIS_PASSWORD=redispassword"
+    volumes: 
+      - ./:/app
+  cache:
+    container_name: redis
+    image: 'redis:4-alpine'
+    command: redis-server --requirepass redispassword
+    ports:
+      - "6379:6379"
+  proxy:
+    container_name: 'nginx'
+    restart: always
+    image: nginx:1.15-alpine
+    ports:
+      - '80:80'  
+      - '443:443'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/sites-enabled/ws.conf:/etc/nginx/sites-enabled/ws.template
+      - ./nginx/ssl/dhparam.pem:/etc/nginx/ssl/dhparam.pem
+      - ./nginx/certs/:/etc/nginx/certs/

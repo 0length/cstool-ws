@@ -1,0 +1,9 @@
+/node_modules
+/log/
+/log/
+/nginx/certs/*.pem
+.env
+.env.bak
+*.log
+*.heapsnapshot
+.DS_Store
